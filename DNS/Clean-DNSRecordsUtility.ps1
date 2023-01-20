@@ -23,15 +23,15 @@ function Remove-DNSRecord{
     Start-Sleep -Seconds 2
     New-Item -ItemType Directory -Path $Path
     
-    "{0},{1},{2},{3},{4},{5}" -F "HostName","RecordType","Type","TimeStamp","TimeToLive","RecordData" |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
-    Write-Host -ForegroundColor Green "Looking for DNS Records older than"$(Get-Date).AddDays(-$days)
+    "{0},{1},{2},{3},{4},{5},{6}" -F "HostName","RecordType","Type","TimeStamp","TimeToLive","RecordData","ZoneName" | Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
+    Write-Host -ForegroundColor Green "Looking for DNS Records older than"$(Get-Date).AddHours(-$days)
     Start-Sleep -Seconds 5
-    $recordsfound = Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType A | Where-Object {$_.timestamp -le $(Get-Date).AddDays(-$days)} | Out-GridView -PassThru
+    $recordsfound = Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType A | Where-Object {$_.timestamp -le $(Get-Date).AddHours(-$days)} | Out-GridView -PassThru
     
     If ($WithCaution -like "Yes") {
         Write-Host -ForegroundColor Yellow "With Caution option has been selected. You will be prompted to confirm every DNS record"
         foreach ($i in $recordsfound) {
-            "{0},{1},{2},{3},{4},{5}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
+            "{0},{1},{2},{3},{4},{5},{6}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString, $ZoneName |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
              Write-Host -ForegroundColor Magenta "Are you sure you want to delete "$i.hostname" with IP Adress "$i.RecordData.IPv4Address.IPAddressToString"?"
             Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType A -Name $i.HostName
            
@@ -42,7 +42,7 @@ function Remove-DNSRecord{
     } else {
         Write-Host -ForegroundColor Yellow "Continuing with the deletion of DNS records"
         foreach ($i in $recordsfound) {
-            "{0},{1},{2},{3},{4},{5}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
+            "{0},{1},{2},{3},{4},{5},{6}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString, $ZoneName |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
             Write-Host -ForegroundColor Cyan $i.hostname will be deleted
             Write-Host -ForegroundColor Magenta "Deleting DNS record "$i.hostname" with IP Adress "$i.RecordData.IPv4Address.IPAddressToString
             Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType A -Name $i.HostName -force
@@ -72,10 +72,10 @@ function Get-DNSRecordReport{
     Start-Sleep -Seconds 2
     New-Item -ItemType Directory -Path $Path
     
-    "{0},{1},{2},{3},{4},{5}" -F "HostName","RecordType","Type","TimeStamp","TimeToLive","RecordData" |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
-    Write-Host -ForegroundColor Green "Looking for DNS Records older than"$(Get-Date).AddDays(-$days)
+    "{0},{1},{2},{3},{4},{5},{6}" -F "HostName","RecordType","Type","TimeStamp","TimeToLive","RecordData","ZoneName" |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
+    Write-Host -ForegroundColor Green "Looking for DNS Records older than"$(Get-Date).AddHours(-$days)
     Start-Sleep -Seconds 5
-    $recordsfound = Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType A | Where-Object {$_.timestamp -le $(Get-Date).AddDays(-$days)}
+    $recordsfound = Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType A | Where-Object {$_.timestamp -le $(Get-Date).AddHours(-$days)}
     ForEach ($i in $recordsfound) {
         "{0},{1},{2},{3},{4},{5}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv" 
     } 
@@ -106,13 +106,22 @@ function Redo-DNSRecord{
     $OpenFileDialog.filename
 #Import the CSV and run a loop to add the DNS entries and data back to the the DNS Zone
     Import-Csv -Path $OpenFileDialog.FileName | ForEach-Object {
-        write-host -ForegroundColor Green "Performing a restore for DNS A Record: " $_.hostname
-        Add-DnsServerResourceRecordA -ZoneName $ZoneName -Name $_.hostname -IPv4Address $_.recorddata -CreatePtr -AgeRecord -Verbose
+        
+        if ($ZoneName -notlike $_.ZoneName )
+        {
+            Write-Host -ForegroundColor Red "!!The Record you are trying to restore was not previously configured for this zone!!"
+            Write-Host -ForegroundColor Yellow  "!!Please review the records to are attempting to restore and make note of the zone name column!!"
+        }else{
+            write-host -ForegroundColor Green "Performing a restore for DNS A Record: " $_.hostname
+            Add-DnsServerResourceRecordA -ZoneName $ZoneName -Name $_.hostname -IPv4Address $_.recorddata -CreatePtr -AgeRecord -Verbose
+        }   
     }
+    pause
     Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
     Start-Sleep -Seconds 2
     show-menu    
 }
+
 
 
 
