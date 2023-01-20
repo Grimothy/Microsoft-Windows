@@ -108,9 +108,10 @@ function Redo-DNSRecord{
     Import-Csv -Path $OpenFileDialog.FileName | ForEach-Object {
         write-host -ForegroundColor Green "Performing a restore for DNS A Record: " $_.hostname
         Add-DnsServerResourceRecordA -ZoneName $ZoneName -Name $_.hostname -IPv4Address $_.recorddata -CreatePtr -AgeRecord -Verbose
-
     }
-    
+    Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
+    Start-Sleep -Seconds 2
+    show-menu    
 }
 
 
