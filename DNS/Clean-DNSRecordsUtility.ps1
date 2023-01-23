@@ -24,9 +24,9 @@ function Remove-DNSRecord{
     New-Item -ItemType Directory -Path $Path
     
     "{0},{1},{2},{3},{4},{5},{6}" -F "HostName","RecordType","Type","TimeStamp","TimeToLive","RecordData","ZoneName" | Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
-    Write-Host -ForegroundColor Green "Looking for DNS Records older than"$(Get-Date).AddHours(-$days)
+    Write-Host -ForegroundColor Green "Looking for DNS Records older than"$(Get-Date).AddDays(-$days)
     Start-Sleep -Seconds 5
-    $recordsfound = Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType A | Where-Object {$_.timestamp -le $(Get-Date).AddHours(-$days)} | Out-GridView -PassThru
+    $recordsfound = Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType A | Where-Object {$_.timestamp -le $(Get-Date).AddDays(-$days)} | Out-GridView -PassThru
     
     If ($WithCaution -like "Yes") {
         Write-Host -ForegroundColor Yellow "With Caution option has been selected. You will be prompted to confirm every DNS record"
@@ -63,29 +63,37 @@ function Get-DNSRecordReport{
         [Parameter(Mandatory=$true)]
         [int] $days # Used to located records older than the value specified
     )
-    $ZoneSelect = Get-DnsServerZone | Out-GridView -PassThru -Title "Select the DNS Zone to generate a report from"
+    $ZoneSelect = Get-DnsServerZone | Out-GridView  -PassThru -Title "Select the DNS Zone to generate a report from"
     $ZoneName = $ZoneSelect.ZoneName
-    Write-Host -ForegroundColor Green "The DNS Zone $ZoneName has been selected"
-    Start-Sleep -Seconds 2
 
-    Write-Host -ForegroundColor Cyan "Creating directories to store reports"
-    Start-Sleep -Seconds 2
-    New-Item -ItemType Directory -Path $Path
-    
-    "{0},{1},{2},{3},{4},{5},{6}" -F "HostName","RecordType","Type","TimeStamp","TimeToLive","RecordData","ZoneName" |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
-    Write-Host -ForegroundColor Green "Looking for DNS Records older than"$(Get-Date).AddHours(-$days)
-    Start-Sleep -Seconds 5
-    $recordsfound = Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType A | Where-Object {$_.timestamp -le $(Get-Date).AddHours(-$days)}
-    ForEach ($i in $recordsfound) {
-        "{0},{1},{2},{3},{4},{5}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv" 
-    } 
-    Write-Host -ForegroundColor Magenta "Report has found:" $($recordsfound).count "DNS records based on your search"
-    Write-Host -ForegroundColor Yellow "For a list of the records, please review the latest log located at:" $Path\$(get-date -Format MM-dd-yyyy)
-    pause
-    Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
-
+    if ($ZoneName.count -gt 1) 
+    {
+        Write-Host -ForegroundColor red "!!You have selected more than one DNS Zone to generate a report from. You must only select 1 DNS Zone!!"
+        Pause
+        Get-DNSRecordReport
+    }else{
+        Write-Host -ForegroundColor Green "The DNS Zone $ZoneName has been selected"
         Start-Sleep -Seconds 2
-        show-menu
+
+        Write-Host -ForegroundColor Cyan "Creating directories to store reports"
+        Start-Sleep -Seconds 2
+        New-Item -ItemType Directory -Path $Path
+    
+        "{0},{1},{2},{3},{4},{5},{6}" -F "HostName","RecordType","Type","TimeStamp","TimeToLive","RecordData","ZoneName" |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
+        Write-Host -ForegroundColor Green "Looking for DNS Records older than"$(Get-Date).AddDays(-$days)
+        Start-Sleep -Seconds 5
+        $recordsfound = Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType A | Where-Object {$_.timestamp -le $(Get-Date).AddDays(-$days)}
+        ForEach ($i in $recordsfound) {
+            "{0},{1},{2},{3},{4},{5}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv" 
+        } 
+        Write-Host -ForegroundColor Magenta "Report has found:" $($recordsfound).count "DNS records based on your search"
+     Write-Host -ForegroundColor Yellow "For a list of the records, please review the latest log located at:" $Path\$(get-date -Format MM-dd-yyyy)
+        pause
+        Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
+
+            Start-Sleep -Seconds 2
+            #show-menu
+    }    
 }
 
 function Redo-DNSRecord{
@@ -110,7 +118,8 @@ function Redo-DNSRecord{
         if ($ZoneName -notlike $_.ZoneName )
         {
             Write-Host -ForegroundColor Red "!!The Record you are trying to restore was not previously configured for this zone!!"
-            Write-Host -ForegroundColor Yellow  "!!Please review the records to are attempting to restore and make note of the zone name column!!"
+            Write-Host -ForegroundColor Yellow  "!!Please review the records you are attempting to restore and make note of the zone name column!!"
+            Write-Host -ForegroundColor Cyan "Records for the restore can be located in the following directory: " $OpenFileDialog.filename
         }else{
             write-host -ForegroundColor Green "Performing a restore for DNS A Record: " $_.hostname
             Add-DnsServerResourceRecordA -ZoneName $ZoneName -Name $_.hostname -IPv4Address $_.recorddata -CreatePtr -AgeRecord -Verbose
