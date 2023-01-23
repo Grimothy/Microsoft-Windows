@@ -145,7 +145,7 @@ function show-menu
    write-host "2:Press '2' To remove DNS records with caution."
    write-host "3:Press '3' To remove DNS records without caution."
    write-host "4:Press '4' To restore deleted DNS records."
-   Write-Host -ForegroundColor Cyan "Q: Press 'Q to quit.'"
+   Write-Host -ForegroundColor Magenta "Q: Press 'Q' To quit."
 }
 
 do{
