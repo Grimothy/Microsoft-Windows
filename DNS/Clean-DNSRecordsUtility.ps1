@@ -38,7 +38,7 @@ function Remove-DNSRecord{
         }
         Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
         Start-Sleep -Seconds 2
-        show-menu
+        menu
     } else {
         Write-Host -ForegroundColor Yellow "Continuing with the deletion of DNS records"
         foreach ($i in $recordsfound) {
@@ -50,7 +50,7 @@ function Remove-DNSRecord{
 
         Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
         Start-Sleep -Seconds 2
-        show-menu
+        menu
     }
 }
 
@@ -92,7 +92,7 @@ function Get-DNSRecordReport{
         Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
 
             Start-Sleep -Seconds 2
-            #show-menu
+            #menu
     }    
 }
 
@@ -128,13 +128,13 @@ function Redo-DNSRecord{
     pause
     Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
     Start-Sleep -Seconds 2
-    show-menu    
+    menu    
 }
 
 
 
 
-function show-menu
+function menu
 {
    param(
        [string]$menutitle = 'Main Menu'
@@ -149,7 +149,7 @@ function show-menu
 }
 
 do{
-   show-menu 
+   menu 
    $userInput = Read-Host "Please make a selection"
    switch ($userInput)
    {
