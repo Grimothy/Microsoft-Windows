@@ -66,6 +66,7 @@ Function BasicADHCMenu {
         "Perform an Enterprise Replication Push",
         "Perform a Replication Pull", # Create Sub menu
         "Initiate KCC",
+        "Get SYSVOL Migration State"
         "Return to main menu", # Create Sub menu
         $(Get-MenuSeparator),
         "Quit"
@@ -113,11 +114,17 @@ Function BasicADHCMenu {
     }
     if ($item -eq 7)
     {
-        Write-Host -ForegroundColor Green "Returning to main menu"
+        Write-Host -ForegroundColor Green "Getting Sysvol Migration State..."
         Start-Sleep -seconds 1
         HomeMenu
     }
     if ($item -eq 8)
+    {
+        Write-Host -ForegroundColor Green "Returning to main menu"  
+        Start-Sleep -seconds 1
+        HomeMenu
+    }
+    if ($item -eq 9)
     {
         Write-Host -ForegroundColor Green "Quiting application"  
         Start-Sleep -seconds 1
