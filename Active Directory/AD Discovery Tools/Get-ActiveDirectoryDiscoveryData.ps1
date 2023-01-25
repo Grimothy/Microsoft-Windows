@@ -75,7 +75,7 @@ Function BasicADHCMenu {
     { 
         Write-Host -ForegroundColor Green "Run Domain Controller Diagnostics"
         Start-Sleep -seconds 1
-        RDCD
+        RDCD -ErrorsOnly No
         BasicADHCMenu
         
     }
