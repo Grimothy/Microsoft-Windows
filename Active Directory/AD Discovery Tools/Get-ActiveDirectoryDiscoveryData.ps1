@@ -160,6 +160,24 @@ Function IKCC {
     BasicADHCMenu
 } 
 
+Function DFSRMIGSTATE {
+
+    Clear-Host
+    $DfsrMigrationState = cmd /c dfsrmig.exe /getglobalstate | Out-String
+    Write-Host -ForegroundColor Cyan " State of SYSVOL: " -NoNewline;
+    Write-Host -ForegroundColor Yellow $DfsrMigrationState
+    if ($DfsrMigrationState -like "*Eliminated*") 
+    {
+        Write-Host Write-Host -ForegroundColor Green "SYSVOL Migration already completed"
+        Pause
+        BasicADHCMenu
+    }else{
+        Write-Host -ForegroundColor Magenta "SYSVOL is not yet in an eliminated state and FRS may be still used!!"
+        Pause
+        BasicADHCMenu
+    }
+
+}
 Function BasicADHCMenu {
     Clear-Host
     $MTBasicADHCMenu = "Basic Active Directory Health Checks"
@@ -227,13 +245,13 @@ Function BasicADHCMenu {
     {
         Write-Host -ForegroundColor Green "Getting Sysvol Migration State..."
         Start-Sleep -seconds 1
-        HomeMenu
+        DFSRMIGSTATE
     }
     if ($item -eq 8)
     {
         Write-Host -ForegroundColor Green "Returning to main menu"  
         Start-Sleep -seconds 1
-        HomeMenu
+        
     }
     if ($item -eq 9)
     {
