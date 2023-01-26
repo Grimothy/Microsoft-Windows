@@ -183,7 +183,7 @@ Function ADDMENU {
     $MenuTitle = "Active Directory Discovery"
     Write-Host -ForegroundColor Green "================$MenuTitle================"
     $item = Show-Menu  -ItemFocusColor Green -ReturnIndex -MenuItems @(
-        "Run Domain Controller Diagnostics"
+        "Run Domain Controller Diagnostics",
         $(Get-MenuSeparator),
         "Quit"
     )
