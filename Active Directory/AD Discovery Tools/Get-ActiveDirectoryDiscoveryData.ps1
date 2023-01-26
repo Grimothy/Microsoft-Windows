@@ -178,20 +178,12 @@ Function DFSRMIGSTATE {
     }
 
 }
-Function BasicADHCMenu {
+Function ADDMENU {
     Clear-Host
-    $MTBasicADHCMenu = "Basic Active Directory Health Checks"
-    Write-Host -ForegroundColor Green "================$MTBasicADHCMenu================"
+    $MenuTitle = "Active Directory Discovery"
+    Write-Host -ForegroundColor Green "================$MenuTitle================"
     $item = Show-Menu  -ItemFocusColor Green -ReturnIndex -MenuItems @(
-        "Run Domain Controller Diagnostics",
-        "Run Domain Controller Diagnostics -- Show Errors Only",
-        "Generate Domain Controller Diagnostics Report",
-        "View Domain Controller Replication",
-        "Perform an Enterprise Replication Push",
-        "Perform a Replication Pull", # Create Sub menu
-        "Initiate KCC",
-        "Get SYSVOL Migration State"
-        "Return to main menu", # Create Sub menu
+        "Run Domain Controller Diagnostics"
         $(Get-MenuSeparator),
         "Quit"
     )
@@ -200,66 +192,43 @@ Function BasicADHCMenu {
     { 
         Write-Host -ForegroundColor Green "Run Domain Controller Diagnostics"
         Start-Sleep -seconds 1
-        RDCD -ErrorsOnly No
+        
         BasicADHCMenu
         
     }
-    if ($item -eq 1)
-    {
-        Write-Host -ForegroundColor Green "Run Domain Controller Diagnostics -- Show Errors Only" 
-        Start-Sleep -seconds 1
-        RDCD -ErrorsOnly Yes
-        BasicADHCMenu
-    }
-    if ($item -eq 2)
-    {
-        Write-Host -ForegroundColor Green "Generate Domain Controller Diagnostics Report"  
-        Start-Sleep -seconds 1
-        RDCDWR -Reporting Yes -SubDir "RDCDW_Reports"
-    }
-    if ($item -eq 3)
-    {
-        Write-Host -ForegroundColor Green "View Domain Controller Replication"  
-        Start-Sleep -seconds 1
-        VDCR
-    }
-    if ($item -eq 4)
-    {
-        Write-Host -ForegroundColor Green "Perform an Enterprise Replication Push"  
-        Start-Sleep -seconds 1
-        PERP
-    }
-    if ($item -eq 5)
-    {
-        Write-Host -ForegroundColor Green "Perform a Replication Pull"  
-        Start-Sleep -seconds 1
-        PRPULL
-    }
-    if ($item -eq 6)
-    {
-        Write-Host -ForegroundColor Green "Initiate KCC"  
-        Start-Sleep -seconds 1
-        IKCC
-    }
-    if ($item -eq 7)
-    {
-        Write-Host -ForegroundColor Green "Getting Sysvol Migration State..."
-        Start-Sleep -seconds 1
-        DFSRMIGSTATE
-    }
-    if ($item -eq 8)
-    {
-        Write-Host -ForegroundColor Green "Returning to main menu"  
-        Start-Sleep -seconds 1
-        
-    }
-    if ($item -eq 9)
-    {
-        Write-Host -ForegroundColor Green "Quiting application"  
-        Start-Sleep -seconds 1
-    }
+    
 }
 
+Function HomeMenu {
+    Clear-Host
+    Write-Host -ForegroundColor Green "================Active Directory Utility================" 
+    
+        $item = Show-Menu -ReturnIndex  -ItemFocusColor Green -MenuItems @(
+            "Basic Active Directory Health Checks",
+            "Active Directory Discovery",
+            "Network time utilities",
+            $(Get-MenuSeparator),
+            "Quit"
+        )
+
+        If ($item -eq 0)
+        { 
+            Write-Host -ForegroundColor Green "Domain Controller Discovery Report has been selected"
+            Start-Sleep -seconds 1
+            BasicADHCMenu
+        
+        }
+        if ($item -eq 1)
+        {
+            Write-Host -ForegroundColor Green "Quick Info has been selected" 
+        }
+        if ($item -eq 2)
+        {
+            Write-Host -ForegroundColor Green "Quiting application"  
+        }
+     
+    
+}
 
 Function HomeMenu {
     Clear-Host
