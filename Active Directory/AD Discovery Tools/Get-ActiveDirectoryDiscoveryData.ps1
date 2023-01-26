@@ -137,12 +137,25 @@ Function PRPULL {
 
     Clear-Host
     Write-Host -ForegroundColor Green "Select the Domain controller you would like to PULL the repliction  " -NoNewline;
-    Write-Host -ForegroundColor Yellow "FROM"
+    Write-Host -ForegroundColor Yellow "TO"
     Start-Sleep -Seconds 1
     $DomainControllers = Get-ADDomainController -Filter * | Select-Object Hostname, IPv4Address, OperatingSystem, site
     $DCObjects = Show-Menu -ItemFocusColor Green -MenuItems $DomainControllers.hostname 
-    CMD /C repadmin /syncall $DCObjects 
+    CMD /C repadmin /syncall /d $DCObjects 
     Write-Host -ForegroundColor Green "Replication Completed"
+    pause
+    BasicADHCMenu
+} 
+#Function Forces the KCC on targeted domain controller(s) to immediately recalculate its inbound replication topology.
+Function IKCC {
+
+    Clear-Host
+    Write-Host -ForegroundColor Green "Select the Domain controller you recalute the inbound replication topology for"
+    Start-Sleep -Seconds 1
+    $DomainControllers = Get-ADDomainController -Filter * | Select-Object Hostname, IPv4Address, OperatingSystem, site
+    $DCObjects = Show-Menu -ItemFocusColor Green -MenuItems $DomainControllers.hostname 
+    CMD /C repadmin /kcc $DCObjects 
+    Write-Host -ForegroundColor Green "KCC completed"
     pause
     BasicADHCMenu
 } 
@@ -208,6 +221,7 @@ Function BasicADHCMenu {
     {
         Write-Host -ForegroundColor Green "Initiate KCC"  
         Start-Sleep -seconds 1
+        IKCC
     }
     if ($item -eq 7)
     {
