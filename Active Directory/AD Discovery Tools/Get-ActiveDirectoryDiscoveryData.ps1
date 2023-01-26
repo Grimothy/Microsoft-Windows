@@ -168,7 +168,7 @@ Function DFSRMIGSTATE {
     Write-Host -ForegroundColor Yellow $DfsrMigrationState
     if ($DfsrMigrationState -like "*Eliminated*") 
     {
-        Write-Host Write-Host -ForegroundColor Green "SYSVOL Migration already completed"
+        Write-Host -ForegroundColor Green "SYSVOL Migration already completed"
         Pause
         BasicADHCMenu
     }else{
