@@ -221,6 +221,8 @@ Function HomeMenu {
         if ($item -eq 1)
         {
             Write-Host -ForegroundColor Green "Quick Info has been selected" 
+            Start-Sleep -Seconds 1
+            ADDMENU 
         }
         if ($item -eq 2)
         {
