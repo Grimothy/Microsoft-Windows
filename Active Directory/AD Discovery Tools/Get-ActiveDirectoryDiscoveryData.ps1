@@ -220,7 +220,7 @@ Function HomeMenu {
         }
         if ($item -eq 1)
         {
-            Write-Host -ForegroundColor Green "Quick Info has been selected" 
+            Write-Host -ForegroundColor Green "Active Directory Discovery Actions has been selected" 
             Start-Sleep -Seconds 1
             ADDMENU 
         }
