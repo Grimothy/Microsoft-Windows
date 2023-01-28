@@ -1,0 +1,68 @@
+Find FSMO Roles holder
+Netdom query fsmo
+
+Find Domain time source
+
+W32tm /monitor
+W32tm /query /peers
+W32tm /query /configuration
+
+
+Find all DC in Domain
+Net dom Query DC
+-
+-
+-
+-
+
+Review Domain Function level
+Get-ADDomain | fl Name,DomainMode
+
+
+To find the Forest Functional Level, use this command:
+Get-ADForest | fl Name,ForestMode
+
+Review Sites and Services
+
+
+Review each server for installed roles
+-
+-
+
+Review Files shares
+
+Net share
+
+
+Review each server for AD health
+-dcdiag.exe /e /c /v /f:”D:\Logs\enterprisecomp-dcdiaglog.txt” (once)
+-dcdiag.exe /c /v /f:”D:\Logs\<dcname>-comp-dcdiaglog.txt” (each DC)
+-dcdiag.exe  /v /f:”D:\Logs\<dcname>-basic-dcdiaglog.txt” (each DC)comp
+-
+
+Run DNS tests on each domain controller
+
+Dnslint.exe /ad /s localhost
+-
+-
+-
+-
+
+Review replication for each DC
+
+Repadmin /replsummary
+Repadmin / showrepl 
+
+Review DNS configuration on each DC
+Ipconfig /all
+
+Locate DHCP Server
+Make note of any IP addresses that need to be added to the scope for DNS
+
+
+
+Certificate services
+
+Located certificate authorities
+
+Determine if CA is using SHA1
