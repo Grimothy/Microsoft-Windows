@@ -208,6 +208,7 @@ function ADDR {
     "The follow machine(s) are running FSMO Roles:"| Add-Content -Path $ReportPath\fsmo.txt
     $FSMO | Add-Content -Path $ReportPath\fsmo.txt 
 
+    $DfsrMigrationState = cmd /c dfsrmig.exe /getglobalstate | Out-String
     Write-Host -ForegroundColor Cyan "Determining the curreent state of SYSVOL: " -NoNewline;
     Write-Host -ForegroundColor Yellow $DfsrMigrationState
     if ($DfsrMigrationState -like "*Eliminated*") 
