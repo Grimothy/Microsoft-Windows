@@ -374,8 +374,14 @@ function ADDR {
     }  
     
     
+    write-host -ForegroundColor Green       "######################################################################"
+    write-host -ForegroundColor Magenta     "#             Domain Controller Data Compilation Completed           #"
+    write-host -ForegroundColor Green       "######################################################################"
+    Copy-Item -Path $LogPath -Destination $ReportPath -Force -Verbose
+
+    Compress-Archive -Path $ReportPath
+
     
-    Write-Host -ForegroundColor Green "Diagnostics complete"
     Pause
     BasicADHCMenu
 }   
