@@ -235,22 +235,28 @@ function ADDR {
     Write-Host -ForegroundColor Green "######################################################################"   
     
     $PDC = $(Get-ADDomain).PDCEmulator
-    Write-Host -ForegroundColor Green "The PDC Emulator Role is hosted on " -NoNewline;
+    Write-Host -ForegroundColor Yellow "The PDC Emulator Role is hosted on " -NoNewline;
     write-host -ForegroundColor Magenta $PDC
-    $DomainControllers = Get-ADDomainController -Filter * | Select-Object Hostname, IPv4Address, OperatingSystem, site
-    foreach ($i in $DomainControllers) {
+    $DomainControllers = Get-ADDomainController
+    #$DomainControllerHostnames = $DomainControllers.hostname
+    foreach ($i in $DomainControllers.hostname)
+    {
         "START OF W32TM REPORT FOR $i" | Add-Content -Path $ReportPath\NTP.txt
-        Write-Host -ForegroundColor Green "Getting W32TM status on: " -NoNewline;
+        Write-Host -ForegroundColor Yellow "Getting W32TM status on: " -NoNewline;
         Write-Host -ForegroundColor Magenta $i
+        Write-Host -ForegroundColor Green "######################################################################"
+        Start-Sleep -Seconds 2
         $W32tmStatus = CMD /C w32tm /query /computer:$i /status |Out-String
-        Write-Host -ForegroundColor Green $W32tmStatus
+        Write-Host -ForegroundColor Yellow $W32tmStatus
         "######STATUS######" | Add-Content -Path $ReportPath\NTP.txt -Append 
         $W32tmStatus | Add-Content -Path $ReportPath\NTP.txt -Append
-        Write-Host -ForegroundColor Green "Getting W32TM CONFIGURATION on: " -NoNewline;
+        Write-Host -ForegroundColor Yellow "Getting W32TM CONFIGURATION on: " -NoNewline;
         Write-Host -ForegroundColor Magenta $i
+        Write-Host -ForegroundColor Green "######################################################################" 
+        Start-Sleep -Seconds 2
         $W32tmConfiguration = CMD /C w32tm /query /computer:$i /CONFIGURATION |Out-String
         Write-Host -ForegroundColor Green  $W32tmConfiguration      
-        "######CONFIGURATION######" | Add-Content -Path $ReportPath\NTP.txt -Append 
+        "######CONFIGURATION######" | Add-Content -Append -Path $ReportPath\NTP.txt
         $W32tmConfiguration| Add-Content -Path $ReportPath\NTP.txt -Append
         pause
 
