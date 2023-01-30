@@ -2,7 +2,7 @@ $UtilityName = "ActiveDirectoryUtility"
 $BaseUtilPath = "$env:SystemDrive\$UtilityName"
 
 $LogPath = "$BaseUtilPath\logs\$(get-date -Format MM-dd-yyyy-hh-mm-ss)__log.txt"
-Start-Transcript -Path $LogPath  -Append -Force
+Start-Transcript -Path $LogPath   -Force
 
 #Install required Powershell Module
 if(-not (Get-Module PSMenu -ListAvailable)){
@@ -237,7 +237,8 @@ function ADDR {
     $PDC = $(Get-ADDomain).PDCEmulator
     Write-Host -ForegroundColor Yellow "The PDC Emulator Role is hosted on " -NoNewline;
     write-host -ForegroundColor Magenta $PDC
-    $DomainControllers = Get-ADDomainController
+    $DomainControllers = Get-ADDomainController -Filter * 
+   
     #$DomainControllerHostnames = $DomainControllers.hostname
     foreach ($i in $DomainControllers.hostname)
     {
@@ -248,21 +249,44 @@ function ADDR {
         Start-Sleep -Seconds 2
         $W32tmStatus = CMD /C w32tm /query /computer:$i /status |Out-String
         Write-Host -ForegroundColor Yellow $W32tmStatus
-        "######STATUS######" | Add-Content -Path $ReportPath\NTP.txt -Append 
-        $W32tmStatus | Add-Content -Path $ReportPath\NTP.txt -Append
+        "######$i STATUS######" | Add-Content -Path $ReportPath\NTP.txt  
+        $W32tmStatus | Add-Content -Path $ReportPath\NTP.txt 
+        
         Write-Host -ForegroundColor Yellow "Getting W32TM CONFIGURATION on: " -NoNewline;
         Write-Host -ForegroundColor Magenta $i
         Write-Host -ForegroundColor Green "######################################################################" 
         Start-Sleep -Seconds 2
         $W32tmConfiguration = CMD /C w32tm /query /computer:$i /CONFIGURATION |Out-String
         Write-Host -ForegroundColor Green  $W32tmConfiguration      
-        "######CONFIGURATION######" | Add-Content -Append -Path $ReportPath\NTP.txt
-        $W32tmConfiguration| Add-Content -Path $ReportPath\NTP.txt -Append
-        pause
+        "######$i CONFIGURATION######" | Add-Content -Path $ReportPath\NTP.txt  
+        $W32tmConfiguration| Add-Content -Path $ReportPath\NTP.txt 
+        
+        Write-Host -ForegroundColor Yellow "Getting W32TM SOURCE CONFIGURATION on: " -NoNewline;
+        Write-Host -ForegroundColor Magenta $i
+        Write-Host -ForegroundColor Green "######################################################################" 
+        Start-Sleep -Seconds 2
+        $W32tmConfiguration = CMD /C w32tm /query /computer:$i /Source |Out-String
+        Write-Host -ForegroundColor Green  $W32tmConfiguration      
+        "######$i SOURCE_CONFIGURATION######" | Add-Content  -Path $ReportPath\NTP.txt  
+        $W32tmConfiguration| Add-Content -Path $ReportPath\NTP.txt 
+
+
+        Write-Host -ForegroundColor Yellow "Getting W32TM PEERS on: " -NoNewline;
+        Write-Host -ForegroundColor Magenta $i
+        Write-Host -ForegroundColor Green "######################################################################" 
+        Start-Sleep -Seconds 2
+        $W32tmConfiguration = CMD /C w32tm /query /computer:$i /peers |Out-String
+        Write-Host -ForegroundColor Green  $W32tmConfiguration      
+        "######$i PEERS######" | Add-Content -Path $ReportPath\NTP.txt  
+        $W32tmConfiguration| Add-Content -Path $ReportPath\NTP.txt 
+          
 
     }
-
-    
+    write-host -ForegroundColor Green "######################################################################"
+    write-host -ForegroundColor Green "#                 NTP Related discovery completed                    #"
+    write-host -ForegroundColor Green "######################################################################" 
+    Pause
+    BasicADHCMenu
 }   
 
 
