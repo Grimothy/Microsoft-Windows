@@ -1,3 +1,4 @@
+$host.UI.RawUI.BackgroundColor = "black"
 $UtilityName = "ActiveDirectoryUtility"
 $BaseUtilPath = "$env:SystemDrive\$UtilityName"
 
@@ -230,9 +231,9 @@ function ADDR {
         }
 
 
-    Write-Host -ForegroundColor Green "######################################################################"
-    Write-Host -ForegroundColor Green "#                        Gathering NTP DATA                          #"
-    Write-Host -ForegroundColor Green "######################################################################"   
+    Write-Host -ForegroundColor Green       "######################################################################"
+    Write-Host -ForegroundColor Green       "#                        Gathering NTP DATA                          #"
+    Write-Host -ForegroundColor Green       "######################################################################"   
     
     $PDC = $(Get-ADDomain).PDCEmulator
     Write-Host -ForegroundColor Yellow "The PDC Emulator Role is hosted on " -NoNewline;
@@ -282,9 +283,73 @@ function ADDR {
           
 
     }
-    write-host -ForegroundColor Green "######################################################################"
-    write-host -ForegroundColor Green "#                 NTP Related discovery completed                    #"
-    write-host -ForegroundColor Green "######################################################################" 
+    write-host -ForegroundColor Green       "######################################################################"
+    write-host -ForegroundColor Magenta     "#                 NTP Related discovery completed                    #"
+    write-host -ForegroundColor Green       "######################################################################" 
+    
+
+    Write-Host -ForegroundColor Green       "######################################################################"
+    Write-Host -ForegroundColor Green       "#           Getting Domain Controller Replication Health             #"
+    Write-Host -ForegroundColor Green       "######################################################################" 
+
+    Write-Host -ForegroundColor Green "Running replication summary Job"
+    Write-Host -ForegroundColor Yellow "The replsummary operation quickly and concisely summarizes the replication state and relative health of a forest"
+    CMD /C repadmin /replsummary | Add-Content -Path $ReportPath\Replication.txt 
+    CMD /C repadmin /showrepl | Add-Content -Path $ReportPath\Replication.txt 
+    Write-Host -ForegroundColor Green "Replication summary Completed"
+
+    write-host -ForegroundColor Green       "######################################################################"
+    write-host -ForegroundColor Magenta     "#             Replication Health Related discovery completed         #"
+    write-host -ForegroundColor Green       "######################################################################"
+    
+
+    Write-Host -ForegroundColor Green       "############################################################################"
+    Write-Host -ForegroundColor Green       "#                  Compiling Domain Controller Data                        #"
+    Write-Host -ForegroundColor Magenta     "# This taks will capture the following details for each domain controller: #"
+    Write-Host -ForegroundColor Cyan        "# 1. Comprehensive DC Diagnostics                                          #"
+    Write-Host -ForegroundColor Cyan        "# 2. Network Configuration                                                 #"
+    Write-Host -ForegroundColor Cyan        "# 3. Installed Roles and Features                                          #"
+    Write-Host -ForegroundColor Cyan        "# 4. List of Installed Applications                                        #"
+    Write-Host -ForegroundColor Green       "############################################################################" 
+
+    foreach ($i in $DomainControllers.hostname)
+    {
+        Start-Sleep -Seconds 5
+        "Start of Comprehensive DC Diagnostics" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        Write-Host -ForegroundColor Green "Start of Comprehensive DC Diagnostics on " -NoNewline;
+        Write-Host -ForegroundColor Yellow $i
+        "#######$i DCIAG START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        CMD /C dcdiag/S:$i /c /v /f:"$ReportPath\$i-DomainControllerDiscoveryData.log"
+        "#######$i DCIAG COMPLETE#####" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        Write-Host -ForegroundColor Green "Starting collection of network configuration details on " -NoNewline;
+        Write-Host -ForegroundColor Yellow $i
+        "#######$i NETWORK COLLECTION START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        Enter-PSSession -ComputerName $i 
+        $NETCollection = Get-NetIPAddress | Out-String
+        Write-Host -ForegroundColor Yellow $NETCollection
+        $NETCollection | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        "#######$i NETWORK COLLECTION COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        Write-Host -ForegroundColor Green "Starting collection of installed Roles and Features on " -NoNewline;
+        Write-Host -ForegroundColor Yellow $i
+        "#######$i NETWORK INSTALLED ROLES AND FEATURES START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        $InstalledRolesAndFeatures = Get-WindowsFeature | Where-Object {$_.installstate -eq "Installed"} | Out-String
+        Write-Host -ForegroundColor Yellow $InstalledRolesAndFeatures
+        $InstalledRolesAndFeatures | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        "#######$i NETWORK INSTALLED ROLES AND FEATURES COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        Exit-PSSession
+
+
+    }  
+    
+    
+    
+    Write-Host -ForegroundColor Green "Diagnostics complete"
     Pause
     BasicADHCMenu
 }   
