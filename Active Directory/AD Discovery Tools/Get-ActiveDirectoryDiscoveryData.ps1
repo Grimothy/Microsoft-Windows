@@ -180,7 +180,7 @@ Function DFSRMIGSTATE {
 
 }
 
-function ADDR {
+function ADDRP1 {
     param 
     (
         [CmdletBinding()]
@@ -379,12 +379,7 @@ function ADDR {
     write-host -ForegroundColor Green       "######################################################################"
     Copy-Item -Path $LogPath -Destination $ReportPath -Force -Verbose
 
-    $compress = @{
-        Path = $ReportPath
-        CompressionLevel = "Fastest"
-        DestinationPath = "$ReportPath.zip"
-      }
-      Compress-Archive @compress -Verbose
+    
 
     Pause
     BasicADHCMenu
@@ -493,26 +488,20 @@ function Get-InstalledSoftware {
     }
 }
 
-Function ADDMENU {
-    Clear-Host
-    $MenuTitle = "Active Directory Discovery"
-    Write-Host -ForegroundColor Green "================$MenuTitle================"
-    $item = Show-Menu  -ItemFocusColor Green -ReturnIndex -MenuItems @(
-        "Run Domain Controller Diagnostics",
-        $(Get-MenuSeparator),
-        "Quit"
+Function COMPRESS{
+    param(
+    [string] $ReportPath
     )
-
-    If ($item -eq 0)
-    { 
-        Write-Host -ForegroundColor Green "Run Domain Controller Diagnostics"
-        Start-Sleep -seconds 1
-        
-        BasicADHCMenu
-        
-    }
-    
+    $compress = @{
+        Path = $ReportPath
+        CompressionLevel = "Fastest"
+        DestinationPath = "$ReportPath.zip"
+      }
+      Compress-Archive @compress -Verbose
 }
+function ADDRP2{
+}
+
 function BasicADHCMenu {
     Clear-Host
     $MTBasicADHCMenu = "Basic Active Directory Health Checks"
@@ -619,8 +608,13 @@ Function HomeMenu {
         {
             Write-Host -ForegroundColor Green "Active Directory Discovery Actions has been selected" 
             Start-Sleep -Seconds 1
+            $SD = "Active_Directory_Discovery_Reports"
+            $JName = Read-Host "Please enter the name of the report"
+            $RPath = "$BaseUtilPath\$SD\$Jname"
             #ADDMENU
-            ADDR -SubDir "Active_Directory_Discovery_Reports"
+            ADDRP1 -SubDir $SD -JobReportName $JName -ReportPath $RPath
+            ADDRP2 -SubDir $SD -JobReportName $JName -ReportPath $RPath
+            COMPRESS -ReportPath $RPath
         }
         if ($item -eq 2)
         {
