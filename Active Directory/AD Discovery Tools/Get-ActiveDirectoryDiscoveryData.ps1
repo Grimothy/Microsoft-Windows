@@ -313,65 +313,69 @@ function ADDR {
     Write-Host -ForegroundColor Cyan        "# 5. List of DNS Forwarders                                                #"
     Write-Host -ForegroundColor Green       "############################################################################" 
 
-    foreach ($i in $DomainControllers.hostname)
-    {
-        Start-Sleep -Seconds 5
-        "Start of Comprehensive DC Diagnostics" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        Write-Host -ForegroundColor Green "Start of Comprehensive DC Diagnostics on " -NoNewline;
-        Write-Host -ForegroundColor Yellow $i
-        "#######$i DCIAG START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        CMD /C dcdiag/S:$i /c /v /f:"$ReportPath\$i-DomainControllerDiscoveryData.log"
-        "#######$i DCIAG COMPLETE#####" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+    
+    
+    $DomainControllers.hostname | ForEach-Object -Parallel  
+        {
+            $i = $DomainControllers.hostname   
+               Start-Sleep -Seconds 5
+            "Start of Comprehensive DC Diagnostics" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            Write-Host -ForegroundColor Green "Start of Comprehensive DC Diagnostics on " -NoNewline;
+            Write-Host -ForegroundColor Yellow $i
+            "#######$i DCIAG START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            CMD /C dcdiag/S:$i /c /v /f:"$ReportPath\$i-DomainControllerDiscoveryData.log"
+            "#######$i DCIAG COMPLETE#####" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+
+            Write-Host -ForegroundColor Green "Starting collection of network configuration details on " -NoNewline;
+            Write-Host -ForegroundColor Yellow $i
+            "#######$i NETWORK COLLECTION START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            Enter-PSSession -ComputerName $i 
+            $NETCollection = Get-NetIPAddress | Out-String
+            Write-Host -ForegroundColor Yellow $NETCollection
+            $NETCollection | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            "#######$i NETWORK COLLECTION COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
         
-        Write-Host -ForegroundColor Green "Starting collection of network configuration details on " -NoNewline;
-        Write-Host -ForegroundColor Yellow $i
-        "#######$i NETWORK COLLECTION START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        Enter-PSSession -ComputerName $i 
-        $NETCollection = Get-NetIPAddress | Out-String
-        Write-Host -ForegroundColor Yellow $NETCollection
-        $NETCollection | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        "#######$i NETWORK COLLECTION COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        
-        Write-Host -ForegroundColor Green "Starting collection of installed Roles and Features on " -NoNewline;
-        Write-Host -ForegroundColor Yellow $i
-        "#######$i INSTALLED ROLES AND FEATURES START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        $InstalledRolesAndFeatures = Get-WindowsFeature | Where-Object {$_.installstate -eq "Installed"} | Out-String
-        Write-Host -ForegroundColor Yellow $InstalledRolesAndFeatures
-        $InstalledRolesAndFeatures | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        "#######$i INSTALLED ROLES AND FEATURES COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            Write-Host -ForegroundColor Green "Starting collection of installed Roles and Features on " -NoNewline;
+            Write-Host -ForegroundColor Yellow $i
+            "#######$i INSTALLED ROLES AND FEATURES START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            $InstalledRolesAndFeatures = Get-WindowsFeature | Where-Object {$_.installstate -eq "Installed"} | Out-String
+            Write-Host -ForegroundColor Yellow $InstalledRolesAndFeatures
+            $InstalledRolesAndFeatures | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            "#######$i INSTALLED ROLES AND FEATURES COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
 
-        Write-Host -ForegroundColor Green "Starting collection of installed software on " -NoNewline;
-        Write-Host -ForegroundColor Yellow $i
-        "#######$i INSTALLED APPLICATIONS START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        $InstalledSoftware = Get-InstalledSoftware | Out-String
-        Write-Host -ForegroundColor Yellow $InstalledSoftware
-        $InstalledSoftware |  Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        "#######$i INSTALLED APPLICATIONS COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            Write-Host -ForegroundColor Green "Starting collection of installed software on " -NoNewline;
+            Write-Host -ForegroundColor Yellow $i
+            "#######$i INSTALLED APPLICATIONS START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            $InstalledSoftware = Get-InstalledSoftware | Out-String
+            Write-Host -ForegroundColor Yellow $InstalledSoftware
+            $InstalledSoftware |  Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            "#######$i INSTALLED APPLICATIONS COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            " " | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
 
 
-        Write-Host -ForegroundColor Green "Starting collection of DNS Forwarders on " -NoNewline;
-        Write-Host -ForegroundColor Yellow $i
-        "#######$i DNS FORWARDERS START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        $DNSForwarders = Get-DnsServerForwarder | Out-String
-        Write-Host -ForegroundColor Yellow $DNSForwarders 
-        $DNSForwarders | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        "#######$i DNS FORWARDERS COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
-        Exit-PSSession
+            Write-Host -ForegroundColor Green "Starting collection of DNS Forwarders on " -NoNewline;
+            Write-Host -ForegroundColor Yellow $i
+            "#######$i DNS FORWARDERS START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            $DNSForwarders = Get-DnsServerForwarder | Out-String
+            Write-Host -ForegroundColor Yellow $DNSForwarders 
+            $DNSForwarders | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            "#######$i DNS FORWARDERS COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+            Exit-PSSession
 
 
-    }  
+        } 
+       
     
     
     write-host -ForegroundColor Green       "######################################################################"
