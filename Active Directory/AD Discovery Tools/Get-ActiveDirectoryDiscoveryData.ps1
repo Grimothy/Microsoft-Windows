@@ -314,7 +314,7 @@ function ADDR {
     Write-Host -ForegroundColor Green       "############################################################################" 
 
     
-    fdgdfgdfg
+    
     $DomainControllers.hostname | ForEach-Object -Parallel  
         {
             $i = $DomainControllers.hostname   
