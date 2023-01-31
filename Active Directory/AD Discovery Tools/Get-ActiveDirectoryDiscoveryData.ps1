@@ -627,7 +627,6 @@ Function HomeMenu {
             Write-Host -ForegroundColor Green "Quiting application"  
         }
      
-    
 }
 
 HomeMenu
