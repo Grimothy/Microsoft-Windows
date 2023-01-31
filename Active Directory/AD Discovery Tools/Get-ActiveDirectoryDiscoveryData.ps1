@@ -379,9 +379,13 @@ function ADDR {
     write-host -ForegroundColor Green       "######################################################################"
     Copy-Item -Path $LogPath -Destination $ReportPath -Force -Verbose
 
-    Compress-Archive -Path $ReportPath
+    $compress = @{
+        Path = $ReportPath
+        CompressionLevel = "Fastest"
+        DestinationPath = "$ReportPath.zip"
+      }
+      Compress-Archive @compress -Verbose
 
-    
     Pause
     BasicADHCMenu
 }   
