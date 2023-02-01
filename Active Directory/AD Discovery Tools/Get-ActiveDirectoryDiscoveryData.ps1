@@ -608,11 +608,16 @@ Function HomeMenu {
         {
             Write-Host -ForegroundColor Green "Active Directory Discovery Actions has been selected" 
             Start-Sleep -Seconds 1
+            $DC = Get-ADDomainController
             $SD = "Active_Directory_Discovery_Reports"
             $JName = Read-Host "Please enter the name of the report"
             $RPath = "$BaseUtilPath\$SD\$Jname"
             #ADDMENU
             ADDRP1 -SubDir $SD -JobReportName $JName -ReportPath $RPath
+            $DC.hostname | Foreach-Object -ThrottleLimit 5 -Parallel {
+              #Action that will run in Parallel. Reference the current object via $PSItem and bring in outside variables with $USING:varname
+              ADDRP2 -SubDir $using:SD -JobReportName $using:JName -ReportPath $using:RPath
+            }
             ADDRP2 -SubDir $SD -JobReportName $JName -ReportPath $RPath
             COMPRESS -ReportPath $RPath
         }
