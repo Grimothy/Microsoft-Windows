@@ -387,7 +387,7 @@ function ADDR {
       Compress-Archive @compress -Verbose
 
     Pause
-    BasicADHCMenu
+    HomeMenu
 }   
 function Get-InstalledSoftware {
     <#
