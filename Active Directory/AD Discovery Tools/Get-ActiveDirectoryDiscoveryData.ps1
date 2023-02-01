@@ -647,12 +647,17 @@ Function HomeMenu {
         {
             Write-Host -ForegroundColor Green "Active Directory Discovery Actions has been selected" 
             Start-Sleep -Seconds 1
+            $DC = Get-ADDomainController -Filter *
             $SD = "Active_Directory_Discovery_Reports"
             $JName = Read-Host "Please enter the name of the report"
             $RPath = "$BaseUtilPath\$SD\$Jname"
             #ADDMENU
             ADDRP1 -SubDir $SD -JobReportName $JName -ReportPath $RPath
-            ADDRP2 -SubDir $SD -JobReportName $JName -ReportPath $RPath
+            $DC.hostname | Foreach-Object -ThrottleLimit 5 -Parallel {
+            $i = $_    
+            ADDRP2 -SubDir $using:SD -JobReportName $using:JName -ReportPath $using:RPath
+            }
+            
             COMPRESS -ReportPath $RPath
         }
         if ($item -eq 2)
