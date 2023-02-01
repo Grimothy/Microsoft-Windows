@@ -618,7 +618,7 @@ Function HomeMenu {
               #Action that will run in Parallel. Reference the current object via $PSItem and bring in outside variables with $USING:varname
               ADDRP2 -SubDir $using:SD -JobReportName $using:JName -ReportPath $using:RPath
             }
-            ADDRP2 -SubDir $SD -JobReportName $JName -ReportPath $RPath
+            
             COMPRESS -ReportPath $RPath
         }
         if ($item -eq 2)
