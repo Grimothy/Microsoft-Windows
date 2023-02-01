@@ -587,6 +587,45 @@ function BasicADHCMenu {
 
 Function HomeMenu {
     Clear-Host
+    Write-Host -ForegroundColor Green "================Network time utilities================" 
+    
+        $item = Show-Menu -ReturnIndex  -ItemFocusColor Green -MenuItems @(
+            "Compare Windows time between Domain Controllers",
+            "Compare Windows Time between two machines (manual)",
+            "BasiC",
+            $(Get-MenuSeparator),
+            "Quit"
+        )
+
+        If ($item -eq 0)
+        { 
+            Write-Host -ForegroundColor Green "Domain Controller Discovery Report has been selected"
+            Start-Sleep -seconds 1
+            BasicADHCMenu
+        
+        }
+        if ($item -eq 1)
+        {
+            Write-Host -ForegroundColor Green "Active Directory Discovery Actions has been selected" 
+            Start-Sleep -Seconds 1
+            $SD = "Active_Directory_Discovery_Reports"
+            $JName = Read-Host "Please enter the name of the report"
+            $RPath = "$BaseUtilPath\$SD\$Jname"
+            #ADDMENU
+            ADDRP1 -SubDir $SD -JobReportName $JName -ReportPath $RPath
+            ADDRP2 -SubDir $SD -JobReportName $JName -ReportPath $RPath
+            COMPRESS -ReportPath $RPath
+        }
+        if ($item -eq 2)
+        {
+            Write-Host -ForegroundColor Green "Quiting application"  
+        }
+     
+    
+}
+
+Function HomeMenu {
+    Clear-Host
     Write-Host -ForegroundColor Green "================Active Directory Utility================" 
     
         $item = Show-Menu -ReturnIndex  -ItemFocusColor Green -MenuItems @(
