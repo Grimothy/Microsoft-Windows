@@ -10,7 +10,7 @@ Function CompareDCTime{
         #[string] $ErrorsOnly
     )
 
-    Clear-Host  
+      
     $DomainControllers = Get-ADDomainController -Filter * | Select-Object Hostname, IPv4Address, OperatingSystem, site
     Write-Host -ForegroundColor Green "######################################################################"
     Write-Host -ForegroundColor Green "#             Compare Domain Control NTP Sync                        #"
@@ -19,22 +19,27 @@ Function CompareDCTime{
     Write-Host "" 
     Write-Host "Please select ONLY 2 domain controller to compare windows time to"
     $DCObjects = Show-Menu -ItemFocusColor Green -MenuItems $DomainControllers.hostname -MultiSelect
-    [int]$Samples = Read-Host "Please specify the ammount of time to collect sample data (In Seconds)"
+    
     if ($($DCObjects).count -ge 3 ){
         Write-Host -ForegroundColor Red -BackgroundColor Black "You can selected more than 2 objects to compare!"
         Write-Host -ForegroundColor Red -BackgroundColor Black "Please only select 2"
         Pause
+        Clear-Host
         CompareDCTime
 
     }else{
-       
+        [int]$Samples = Read-Host "Please specify the ammount of time to collect sample data (In Seconds)"
         $Source = $DCObjects[0]
         $Target = $DCObjects[1]
         
         Enter-PSSession -ComputerName $Source -Verbose
         write-host -ForegroundColor Cyan "Connected to " $env:COMPUTERNAME
         cmd /c w32tm /stripchart /computer:$Target /samples:$Samples
+        Pause
+        Clear-Host
         CompareDCTime
+
+
     }
 
 }
