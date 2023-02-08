@@ -513,14 +513,15 @@ Function CompareDCTime{
     Write-Host ""
     Write-Host "" 
     Write-Host "Please select ONLY 2 domain controller to compare windows time to"
-    $DCObjects = Show-Menu -ItemFocusColor Green -MenuItems $DomainControllers.hostname -MultiSelect
+    $DCObjects = Show-Menu -ItemFocusColor Green -MenuItems $DomainControllers.hostname -MultiSelect 
     
     if ($($DCObjects).count -ge 3 ){
         Write-Host -ForegroundColor Red -BackgroundColor Black "You can selected more than 2 objects to compare!"
         Write-Host -ForegroundColor Red -BackgroundColor Black "Please only select 2"
         Pause
         Clear-Host
-        CompareDCTime
+        NTUMENU
+       
 
     }else{
         [int]$Samples = Read-Host "Please specify the ammount of time to collect sample data (In Seconds)"
@@ -532,7 +533,7 @@ Function CompareDCTime{
         cmd /c w32tm /stripchart /computer:$Target /samples:$Samples
         Pause
         Clear-Host
-        CompareDCTime
+        NTUMENU
 
 
     }
