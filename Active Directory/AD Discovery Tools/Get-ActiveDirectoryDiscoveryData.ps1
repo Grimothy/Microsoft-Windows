@@ -539,13 +539,14 @@ Function CompareDCTime{
     }
 
 }
-
+#MENUS
 Function NTUMENU {
     Clear-Host
     $MenuTitle = "Network Time Utilities"
     Write-Host -ForegroundColor Green "================$MenuTitle================"
     $item = Show-Menu  -ItemFocusColor Green -ReturnIndex -MenuItems @(
         "Compare Network Time between Select Controllers (W32tm Stripchart)",
+        "Compare Network Time between devices (W32tm Stripchart)"
         "Return to Main Menu",
         $(Get-MenuSeparator),
         "Quit"
@@ -558,6 +559,12 @@ Function NTUMENU {
         CompareDCTime
     }
     if ($item -eq   1)
+    {
+        Write-Host -ForegroundColor Green "Compare Network Time between devices (W32tm Stripchart) has been selected"
+        Start-Sleep -Seconds 1
+        HomeMenu
+    }
+    if ($item -eq   2)
     {
         Write-Host -ForegroundColor Green "Returning to Main Menu" 
         Start-Sleep -Seconds 1
