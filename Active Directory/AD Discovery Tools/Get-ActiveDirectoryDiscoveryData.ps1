@@ -564,6 +564,7 @@ Function ADDMENU {
     Write-Host -ForegroundColor Green "================$MenuTitle================"
     $item = Show-Menu  -ItemFocusColor Green -ReturnIndex -MenuItems @(
         "Run Domain Controller Diagnostics",
+        "Return to Main Menu",
         $(Get-MenuSeparator),
         "Quit"
     )
@@ -575,6 +576,12 @@ Function ADDMENU {
         
         BasicADHCMenu
         
+    }
+    if ($item -eq   1)
+    {
+        Write-Host -ForegroundColor Green "Returning to Main Menu" 
+        Start-Sleep -Seconds 1
+        HomeMenu
     }
     
 }
