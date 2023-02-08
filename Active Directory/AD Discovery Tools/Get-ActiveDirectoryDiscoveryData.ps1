@@ -546,6 +546,7 @@ Function NTUMENU {
     Write-Host -ForegroundColor Green "================$MenuTitle================"
     $item = Show-Menu  -ItemFocusColor Green -ReturnIndex -MenuItems @(
         "Compare Network Time between Select Controllers (W32tm Stripchart)",
+        "Return to Main Menu",
         $(Get-MenuSeparator),
         "Quit"
     )
@@ -556,6 +557,12 @@ Function NTUMENU {
         Start-Sleep -seconds 1
         CompareDCTime
     }
+    if ($item -eq   1)
+    {
+        Write-Host -ForegroundColor Green "Returning to Main Menu" 
+        Start-Sleep -Seconds 1
+        HomeMenu
+    }
     
 }
 Function ADDMENU {
@@ -564,7 +571,6 @@ Function ADDMENU {
     Write-Host -ForegroundColor Green "================$MenuTitle================"
     $item = Show-Menu  -ItemFocusColor Green -ReturnIndex -MenuItems @(
         "Run Domain Controller Diagnostics",
-        "Return to Main Menu",
         $(Get-MenuSeparator),
         "Quit"
     )
@@ -577,12 +583,7 @@ Function ADDMENU {
         BasicADHCMenu
         
     }
-    if ($item -eq   1)
-    {
-        Write-Host -ForegroundColor Green "Returning to Main Menu" 
-        Start-Sleep -Seconds 1
-        HomeMenu
-    }
+   
     
 }
 function BasicADHCMenu {
