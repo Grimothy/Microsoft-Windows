@@ -313,10 +313,10 @@ function ADDR {
     if ($null -ne $(Get-ADTrust -Filter *)) 
         {
             write-host -ForegroundColor Green "Trust(s) have been detected"
-            Get-ADTrust -Filter * | Add-Content $ReportPath\DomainTrusts.txt
+            Get-ADTrust -Filter * | Out-File -FilePath $ReportPath\DomainTrusts.txt
         }else{
             Write-Host -ForegroundColor Magenta "No trust detected"
-            "No trust detected" | Add-Content $ReportPath\DomainTrusts.txt
+            "No trust detected" | Add-Content -Path $ReportPath\DomainTrusts.txt
         }
     write-host -ForegroundColor Green       "######################################################################"
     write-host -ForegroundColor Magenta     "#             Gathering of Domain Trust Details Completed           #"
