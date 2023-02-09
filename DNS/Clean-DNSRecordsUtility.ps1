@@ -131,7 +131,7 @@ function Redo-DNSRecord{
             Write-Host -ForegroundColor Cyan "Records for the restore can be located in the following directory: " $OpenFileDialog.filename
         }else{
             write-host -ForegroundColor Green "Performing a restore for DNS A Record: " $_.hostname
-            Add-DnsServerResourceRecordA -ZoneName $ZoneName -Name $_.hostname -IPv4Address $_.recorddata -CreatePtr -AgeRecord -Verbose
+            Add-DnsServerResourceRecordA -ZoneName $ZoneName -Name $_.hostname -IPv4Address $_.recorddata -CreatePtr -AgeRecord -Verbose -ThrottleLimit 100
         }   
     }
     pause
