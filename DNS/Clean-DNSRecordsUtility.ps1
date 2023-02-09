@@ -3,6 +3,13 @@ $LogPath = "$env:SystemDrive\DNS_CleanUp_Util\logs\$(get-date -Format MM-dd-yyyy
 $host.UI.RawUI.BackgroundColor = "black" 
 Start-Transcript -Path $LogPath  -Append -Force
 
+#Install required Powershell Module
+if(-not (Get-Module PSMenu -ListAvailable)){
+    Write-Host -ForegroundColor Magenta "PSMenu module not installed. Performing installation now..."
+    Install-Module PSMenu -Scope CurrentUser -Force
+    }
+
+
 function Remove-DNSRecord{
     [CmdletBinding()]
     param( 
@@ -40,7 +47,7 @@ function Remove-DNSRecord{
         }
         Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
         Start-Sleep -Seconds 2
-        menu
+        mainmenu
     } else {
         Write-Host -ForegroundColor Yellow "Continuing with the deletion of DNS records"
         foreach ($i in $recordsfound) {
@@ -52,7 +59,7 @@ function Remove-DNSRecord{
 
         Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
         Start-Sleep -Seconds 2
-        menu
+        mainmenu
     }
 }
 
@@ -94,7 +101,7 @@ function Get-DNSRecordReport{
         Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
 
             Start-Sleep -Seconds 2
-            #menu
+            mainmenu
     }    
 }
 
@@ -128,7 +135,7 @@ function Redo-DNSRecord{
         }   
     }
     pause
-    Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
+    Write-Host -ForegroundColor Green "Task Completed Returning to main mainmenu"
     Start-Sleep -Seconds 2
     menu    
 }
@@ -159,59 +166,176 @@ function Remove-DNSRecordFromCSV{
                 Write-Host -ForegroundColor Cyan "Records for the remove can be located in the following directory: " $OpenFileDialog.filename
             }else{
                 write-host -ForegroundColor Green "Performing a remove for DNS A Record: " $_.hostname
-                remove-DnsServerResourceRecord -RRType 'A' -ZoneName $ZoneName -Name $_.hostname -RecordData $_.recorddata
+                remove-DnsServerResourceRecord -RRType 'A' -ZoneName $ZoneName -Name $_.hostname -RecordData $_.recorddata -Force
             }   
         }
         pause
         Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
         Start-Sleep -Seconds 2
-        menu    
+        mainmenu    
     }
 
+function  DNSRECORDSREPORT
+{
+    $DomainControllers = Get-ADDomainController -Filter * | Select-Object Hostname, IPv4Address, OperatingSystem, site
+    $ZoneSelect = Get-DnsServerZone | Out-GridView -PassThru -Title "Select the DNS Zone to generate a count from"
+    $ZoneName = $ZoneSelect.ZoneName
+    Write-Host "Please select the Active Directory Integrated Servers to get a DNS Resource Record count from"
+    $DCObjects = Show-Menu -ItemFocusColor Green -MenuItems $DomainControllers.hostname -MultiSelect
 
-function menu
+    foreach ($i in $DCObjects){
+        $recordsfound = $(Get-DnsServerResourceRecord -RRType A -ZoneName $ZoneName).Count
+        Write-Host -ForegroundColor Green "$i has " -NoNewline;
+        Write-Host -ForegroundColor Cyan $recordsfound
+    }
+
+    Pause
+    mainmenu
+
+
+}
+
+
+
+function mainmenu
+{
+    param(
+        [string]$menutitle = 'Main Menu'
+    )
+   
+    Clear-Host
+    Write-Host -Separator "================$menutitle================"
+    $item = Show-Menu -ItemFocusColor Green -ReturnIndex -MenuItems @(
+        "Export DNS Records to CSV",
+        "DNS Record REMOVAL Options",
+        "DNS Record RESTORATION Options",
+        "Count DNS A Records"
+        $(Get-MenuSeparator),
+        "Quit"
+    )
+
+    if ($item -eq 0)
+    {
+        Write-Host -ForegroundColor Green 'Export DNS records selected'
+        Start-Sleep -Seconds 1
+        Get-DNSRecordReport
+    }
+    if ($item -eq 1)
+    {
+        Write-Host -ForegroundColor Green 'DNS Record REMOVAL Options Selected'
+        Start-Sleep -Seconds 1
+        DNSRemovalMenu
+    }
+    if ($item -eq 2)
+    {
+        Write-Host -ForegroundColor Green 'DNS Record RESTORATION Options Selected'
+        Start-Sleep -Seconds 1
+        DNSRestoreMenu
+    }
+    if ($item -eq 3)
+    {
+        Write-Host -ForegroundColor Green 'Count DNS A Records'
+        Start-Sleep -Seconds 1
+        DNSRECORDSREPORT
+    }
+  
+      
+}
+
+function DNSRemovalMenu
 {
    param(
-       [string]$menutitle = 'Main Menu'
+       [string]$menutitle = 'DNS Record Removal Options'
    )
-   Clear-Host
-   Write-Host "================$menutitle================"
-   write-host -ForegroundColor Green "1:Press '1' To export DNS records to CSV."
-   write-host -ForegroundColor Green "2:Press '2' To remove DNS records with caution."
-   write-host -ForegroundColor Green "3:Press '3' To remove DNS records without caution."
-   write-host -ForegroundColor Green "4:Press '4' To remove DNS records from a CSV."
-   write-host -ForegroundColor Green "5:Press '5' To restore deleted DNS records."
-   Write-Host -ForegroundColor Magenta "Q: Press 'Q' To quit."
+    Clear-Host
+    Write-Host "================$menutitle================"
+    $item = Show-Menu -ItemFocusColor Green -ReturnIndex -MenuItems @(
+        "Remove DNS Records with Caution",
+        "Remove DNS Records WITHOUT Caution",
+        "Remove DNS Records from a CSV",
+        "Return to Main Menu"
+        $(Get-MenuSeparator),
+        "Quit"
+    
+    )
+    if ($item -eq 0)
+    {
+        Write-Host -ForegroundColor Green 'Remove DNS Records ' -NoNewline;
+        Write-Host -ForegroundColor Cyan 'with Caution ' -NoNewline;
+        Write-Host -ForegroundColor Green 'selected'
+        Start-Sleep -Seconds 1
+        Remove-DNSRecord -WithCaution Yes
+    }
+    if ($item -eq 1)
+    {
+        Write-Host -ForegroundColor Green 'Remove DNS Records ' -NoNewline;
+        Write-Host -ForegroundColor Red 'WITH OUT ' -NoNewline;
+        Write-Host -ForegroundColor Green 'selected'
+        Start-Sleep -Seconds 1
+        Remove-DNSRecord -WithCaution No
+    }
+    if ($item -eq 2)
+    {
+        Write-Host -ForegroundColor Green 'Remove DNS Records from a CSV selected'
+        Start-Sleep -Seconds 1
+        Remove-DNSRecordFromCSV
+    }
+    if ($item -eq 3)
+    {
+        Write-Host -ForegroundColor Green 'Returning to main menu'
+        Start-Sleep -Seconds 1
+        mainmenu
+    }
+   
 }
 
-do{
-   menu 
-   $userInput = Read-Host "Please make a selection"
-   switch ($userInput)
-   {
+
+
+function DNSRestoreMenu
+{
+    param(
+       [string]$menutitle = 'DNS Record Restoration Options'
+   )
+        Clear-Host
+        Write-Host "================$menutitle================"
+        $item = Show-Menu -ItemFocusColor Green -ReturnIndex -MenuItems @(
+        'Restore Deleted DNS Entries from a previous job',
+        #'Restore SELECT Deleted DNS Entries from a previous job',
+        "Return to Main Menu",
+        $(Get-MenuSeparator),
+        "Quit"
+    )
+
+    if ($item -eq 0)
+    {
+        Write-Host -ForegroundColor Green 'Restore Deleted DNS Entries from a previous job has been selected'
+        Start-Sleep -Seconds 1
+        Redo-DNSRecord
+    }
+    if ($item -eq 1)
+    {
+        Write-Host -ForegroundColor Green 'Returning to main menu'
+        Start-Sleep -Seconds 1
+        mainmenu
+    }
+}
+
+<#
+    $userInput = Read-Host "Please make a selection"
+    switch ($userInput)
+    {
        '1' {
-            Write-Host -ForegroundColor Green 'Option 1 --- Export DNS records'
-            Get-DNSRecordReport
-         }
-       '2' {
-            Write-Host -ForegroundColor Green 'Option 2 --- With Caution Selected'
-            Remove-DNSRecord -WithCaution Yes
-        }
-       '3' {
-            Write-Host -ForegroundColor Green 'Option 3 --- Without Caution Selected'
-            Remove-DNSRecord -WithCaution No 
-        }
-        '4' {
-            Write-Host -ForegroundColor Green 'Option 4 --- Remove DNS records from CSV Selected'
-            Remove-DNSRecordFromCSV
-        }
-        '5' {
-            Write-Host -ForegroundColor Green 'Option 5 --- Restore DNS Records Selected'
+            Write-Host -ForegroundColor Green 'Option 1 --- Restore DNS Records Selected'
             Redo-DNSRecord
+       }
+        'B' {
+            Write-Host -ForegroundColor Green 'Back --- Returning to Main Menu.'
+            mainmenu
         }
-   }
+            
+    }
+#>
 
-}
-until($userInput-eq 'q')
-
-
+mainmenu
+Stop-Transcript
+Pause

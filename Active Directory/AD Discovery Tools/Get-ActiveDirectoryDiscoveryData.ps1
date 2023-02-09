@@ -1,4 +1,4 @@
-$host.UI.RawUI.BackgroundColor = "black"
+s
 $UtilityName = "ActiveDirectoryUtility"
 $BaseUtilPath = "$env:SystemDrive\$UtilityName"
 
