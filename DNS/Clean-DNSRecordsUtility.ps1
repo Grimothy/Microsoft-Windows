@@ -1,6 +1,8 @@
 
-$LogPath = "$env:SystemDrive\DNS_CleanUp_Util\logs\$(get-date -Format MM-dd-yyyy-hh-mm-ss)__log.txt" 
+$LogPath = "$env:SystemDrive\DNS_CleanUp_Util\logs\$(get-date -Format MM-dd-yyyy-hh-mm-ss)__log.txt"
+$host.UI.RawUI.BackgroundColor = "black" 
 Start-Transcript -Path $LogPath  -Append -Force
+
 function Remove-DNSRecord{
     [CmdletBinding()]
     param( 
@@ -84,7 +86,7 @@ function Get-DNSRecordReport{
         Start-Sleep -Seconds 5
         $recordsfound = Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType A | Where-Object {$_.timestamp -le $(Get-Date).AddDays(-$days)}
         ForEach ($i in $recordsfound) {
-            "{0},{1},{2},{3},{4},{5}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv" 
+            "{0},{1},{2},{3},{4},{5},{6}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString,$ZoneName |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv" 
         } 
         Write-Host -ForegroundColor Magenta "Report has found:" $($recordsfound).count "DNS records based on your search"
      Write-Host -ForegroundColor Yellow "For a list of the records, please review the latest log located at:" $Path\$(get-date -Format MM-dd-yyyy)
@@ -131,7 +133,40 @@ function Redo-DNSRecord{
     menu    
 }
 
-
+function Remove-DNSRecordFromCSV{
+     
+    #location where DNS Record Removals are stored by default
+          $path = "$env:SystemDrive\DNS_CleanUp_Util\DNS Record Report Jobs\$JobReportName" 
+    #Selection of the Zone file
+        $ZoneSelect = Get-DnsServerZone | Out-GridView -PassThru -Title "Select the DNS Zone to generate a report from"
+        $ZoneName = $ZoneSelect.ZoneName
+        Write-Host -ForegroundColor Green "The DNS Zone $ZoneName has been selected"
+        Start-Sleep -Seconds 2
+    #Create a Dialog box to select the file for restoration
+        [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null
+        $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
+        $OpenFileDialog.initialDirectory = $path
+        #$OpenFileDialog.filter = "CSV (*.CSV)| *.CSV"
+        $OpenFileDialog.ShowDialog() | Out-Null
+        $OpenFileDialog.filename
+    #Import the CSV and run a loop to add the DNS entries and data back to the the DNS Zone
+        Import-Csv -Path $OpenFileDialog.FileName | ForEach-Object {
+            
+            if ($ZoneName -notlike $_.ZoneName )
+            {
+                Write-Host -ForegroundColor Red "!!The Record you are trying to remove was not previously configured for this zone!!"
+                Write-Host -ForegroundColor Yellow  "!!Please review the records you are attempting to remove and make note of the zone name column!!"
+                Write-Host -ForegroundColor Cyan "Records for the remove can be located in the following directory: " $OpenFileDialog.filename
+            }else{
+                write-host -ForegroundColor Green "Performing a remove for DNS A Record: " $_.hostname
+                remove-DnsServerResourceRecord -RRType 'A' -ZoneName $ZoneName -Name $_.hostname -RecordData $_.recorddata
+            }   
+        }
+        pause
+        Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
+        Start-Sleep -Seconds 2
+        menu    
+    }
 
 
 function menu
@@ -141,10 +176,11 @@ function menu
    )
    Clear-Host
    Write-Host "================$menutitle================"
-   write-host "1:Press '1' To export DNS records to CSV."
-   write-host "2:Press '2' To remove DNS records with caution."
-   write-host "3:Press '3' To remove DNS records without caution."
-   write-host "4:Press '4' To restore deleted DNS records."
+   write-host -ForegroundColor Green "1:Press '1' To export DNS records to CSV."
+   write-host -ForegroundColor Green "2:Press '2' To remove DNS records with caution."
+   write-host -ForegroundColor Green "3:Press '3' To remove DNS records without caution."
+   write-host -ForegroundColor Green "4:Press '4' To remove DNS records from a CSV."
+   write-host -ForegroundColor Green "5:Press '5' To restore deleted DNS records."
    Write-Host -ForegroundColor Magenta "Q: Press 'Q' To quit."
 }
 
@@ -166,12 +202,16 @@ do{
             Remove-DNSRecord -WithCaution No 
         }
         '4' {
-            Write-Host -ForegroundColor Green 'Option 4 --- Restore DNS Records Selected'
+            Write-Host -ForegroundColor Green 'Option 4 --- Remove DNS records from CSV Selected'
+            Remove-DNSRecordFromCSV
+        }
+        '5' {
+            Write-Host -ForegroundColor Green 'Option 5 --- Restore DNS Records Selected'
             Redo-DNSRecord
         }
    }
 
 }
 until($userInput-eq 'q')
-Stop-Transcript
-Pause
+
+

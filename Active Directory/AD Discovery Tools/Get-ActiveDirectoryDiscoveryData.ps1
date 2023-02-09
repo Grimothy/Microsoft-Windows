@@ -318,6 +318,7 @@ function ADDR {
             Write-Host -ForegroundColor Magenta "No trust detected"
             "No trust detected" | Add-Content -Path $ReportPath\DomainTrusts.txt
         }
+        Write-Host -ForegroundColor Green "Domain Trust Details Job Completed"
     write-host -ForegroundColor Green       "######################################################################"
     write-host -ForegroundColor Magenta     "#             Gathering of Domain Trust Details Completed           #"
     write-host -ForegroundColor Green       "######################################################################"
@@ -331,6 +332,7 @@ function ADDR {
     Write-Host -ForegroundColor Cyan        "# 3. Installed Roles and Features                                          #"
     Write-Host -ForegroundColor Cyan        "# 4. List of Installed Applications                                        #"
     Write-Host -ForegroundColor Cyan        "# 5. List of DNS Forwarders                                                #"
+    Write-Host -ForegroundColor Cyan        "# 6. List of DNS Zones                                                     #"
     Write-Host -ForegroundColor Green       "############################################################################" 
 
     foreach ($i in $DomainControllers.hostname)
@@ -388,10 +390,24 @@ function ADDR {
         Write-Host -ForegroundColor Yellow $DNSForwarders 
         $DNSForwarders | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
         "#######$i DNS FORWARDERS COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+
+        Write-Host -ForegroundColor Green "Starting collection of DNS Zones on" -NoNewline;
+        Write-Host -ForegroundColor Yellow $i
+        "#######$i DNS Zones START########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        $DNSZones = Get-DnsServerZone -ComputerName $i | select * | Out-String
+        Write-Host -ForegroundColor Yellow $DNSZones
+        $DNSZones | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+        "#######$i DNS Zones COMPLETE########" | Add-Content -Path "$ReportPath\$i-DomainControllerDiscoveryData.log"
+
+        
         Exit-PSSession
 
 
-    }  
+
+
+    }
+    
+    
     
     
     write-host -ForegroundColor Green       "######################################################################"
