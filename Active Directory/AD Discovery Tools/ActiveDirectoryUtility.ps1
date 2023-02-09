@@ -685,10 +685,12 @@ function BasicADHCMenu {
         "Generate Domain Controller Diagnostics Report",
         "View Domain Controller Replication",
         "Perform an Enterprise Replication Push",
-        "Perform a Replication Pull", # Create Sub menu
+        "Perform a Replication Pull",
         "Initiate KCC",
         "Get SYSVOL Migration State"
-        "Return to main menu", # Create Sub menu
+        "List Domain Controllers",
+        "List FSMO Role Holders",
+        "Return to main menu", 
         $(Get-MenuSeparator),
         "Quit"
     )
@@ -741,17 +743,36 @@ function BasicADHCMenu {
     {
         Write-Host -ForegroundColor Green "Getting Sysvol Migration State..."
         Start-Sleep -seconds 1
-        HomeMenu
         DFSRMIGSTATE
+        Pause
+        BasicADHCMenu
     }
     if ($item -eq 8)
+    {
+        Write-Host -ForegroundColor Green "Gathering List of Domain Controllers"  
+        Start-Sleep -seconds 1
+        cmd /c netdom query DC
+        Pause
+        BasicADHCMenu
+    
+    }
+    if ($item -eq 9)
+    {
+        Write-Host -ForegroundColor Green "Gathering List of FSMO Role Holders"  
+        Start-Sleep -seconds 1
+        cmd /c netdom query FSMO
+        Pause
+        BasicADHCMenu
+
+    }
+    if ($item -eq 10)
     {
         Write-Host -ForegroundColor Green "Returning to main menu"  
         Start-Sleep -seconds 1
         HomeMenu
 
     }
-    if ($item -eq 9)
+    if ($item -eq 11)
     {
         Write-Host -ForegroundColor Green "Quiting application"  
         Start-Sleep -seconds 1

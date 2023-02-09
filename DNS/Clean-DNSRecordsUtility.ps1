@@ -137,7 +137,7 @@ function Redo-DNSRecord{
     pause
     Write-Host -ForegroundColor Green "Task Completed Returning to main mainmenu"
     Start-Sleep -Seconds 2
-    menu    
+    mainmenu    
 }
 
 function Remove-DNSRecordFromCSV{
