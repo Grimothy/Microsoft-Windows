@@ -2,6 +2,7 @@
 $LogPath = "$env:SystemDrive\DNS_CleanUp_Util\logs\$(get-date -Format MM-dd-yyyy-hh-mm-ss)__log.txt"
 $host.UI.RawUI.BackgroundColor = "black" 
 Start-Transcript -Path $LogPath  -Append -Force
+#$ErrorActionPreference = 'SilentlyContinue'
 
 #Install required Powershell Module
 if(-not (Get-Module PSMenu -ListAvailable)){
@@ -37,36 +38,33 @@ if(-not (Get-Module PSMenu -ListAvailable)){
     $recordsfound = Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType A | Where-Object {$_.timestamp -le $(Get-Date).AddDays(-$days)} | Out-GridView -PassThru
     $TotalItems=$recordsfound.count
     $CurrentItem = 0
-    $ErrorActionPreference = 'SilentlyContinue'
+    #$ErrorActionPreference = 'SilentlyContinue'
     If ($WithCaution -like "Yes") {
         Write-Host -ForegroundColor Yellow "With Caution option has been selected. You will be prompted to confirm every DNS record"
         $hit = 0
         Write-Host -ForegroundColor Yellow "Continuing with the deletion of DNS records"
-        foreach ($i in $recordsfound) {
+        foreach ($i in $recordsfound) 
+        {
             Write-Progress -Activity "Removing the Selected DNS A Records and PTR Records" -Status "$PercentComplete% Complete:" -PercentComplete $PercentComplete
             "{0},{1},{2},{3},{4},{5},{6}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString,$ZoneName |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
             Write-Host -ForegroundColor Cyan $i.hostname will be deleted
             Write-Host -ForegroundColor Yellow "Deleting DNS record "$i.hostname" with IP Adress "$i.RecordData.IPv4Address.IPAddressToString
+            Write-Host -ForegroundColor Cyan "=============================================="
             Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType A -Name $i.HostName -force
-            #Write-host -ForegroundColor Cyan "Performing recursion to Reverse lookup zones.... please be patient"
-                $ReverseZones = Get-DnsServerZone | Where-Object {$_.IsReverseLookupZone -eq $true}
-                $ReverseZonename = $ReverseZones.ZoneName
-                
-                foreach ($RZone in $ReverseZonename)
+            $ReverseZones = Get-DnsServerZone | Where-Object {$_.IsReverseLookupZone -eq $true}
+            $ReverseZonename = $ReverseZones.ZoneName
+            foreach ($RZone in $ReverseZonename)
                 {
                     $hostname = $i.hostname
                     $FQDNOPT2 = $i.HostName+"."+$zonename+"."
-                    #Write-Host "$hostname.$ZoneName"
-                    #Write-Host -ForegroundColor DarkMagenta "Looking in Zone $RZone for $FQDNOPT2"
-                    
                     if ($(get-DnsServerResourceRecord -ZoneName $RZone -RRType Ptr).recorddata.ptrdomainname  -like "$FQDNOPT2" )
                     {
-                        Write-Host -ForegroundColor Green "Found $Hostname in $rzone!"
+                        Write-Host -ForegroundColor Green "Found $FQDNOPT2 in $rzone!"
                         Start-Sleep -Seconds .25
                         $PrtRecord = Get-DnsServerResourceRecord -ZoneName $RZone | Where-Object {$_.recorddata.ptrdomainname -like "$FQDNOPT2"}
-                        Remove-DnsServerResourceRecord -ZoneName $RZone -Name $PrtRecord.HostName -RRType Ptr -Force -Verbose 
+                        Remove-DnsServerResourceRecord -ZoneName $RZone -Name $PrtRecord.HostName -RRType Ptr -Force -Verbose
+                        Write-Host ""
                         $hit++
-                    
                     }    
                 }
             $CurrentItem++
@@ -80,8 +78,7 @@ if(-not (Get-Module PSMenu -ListAvailable)){
         Pause
         Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
         Start-Sleep -Seconds 2
-        mainmenu
-    
+        mainmenu   
     } else {
         $hit = 0
         Write-Host -ForegroundColor Yellow "Continuing with the deletion of DNS records"
@@ -90,6 +87,7 @@ if(-not (Get-Module PSMenu -ListAvailable)){
             Write-Progress -Activity "Removing the Selected DNS A Records and PTR Records" -Status "$PercentComplete% Complete:" -PercentComplete $PercentComplete
             "{0},{1},{2},{3},{4},{5},{6}" -F $i.HostName, $i.RecordType, $i.Type,$i.TimeStamp,$i.TimeToLive,$i.RecordData.IPv4Address.IPAddressToString,$ZoneName |Add-Content -Path "$Path\$(get-date -Format MM-dd-yyyy)__records.csv"
             Write-Host -ForegroundColor Cyan $i.hostname will be deleted
+            Write-Host -ForegroundColor Cyan "=============================================="
             Write-Host -ForegroundColor Yellow "Deleting DNS record "$i.hostname" with IP Adress "$i.RecordData.IPv4Address.IPAddressToString
             Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType A -Name $i.HostName -force
             $ReverseZones = Get-DnsServerZone | Where-Object {$_.IsReverseLookupZone -eq $true}
@@ -97,15 +95,14 @@ if(-not (Get-Module PSMenu -ListAvailable)){
             foreach ($RZone in $ReverseZonename)
             {
                 $hostname = $i.hostname
-                $FQDNOPT2 = $i.HostName+"."+$zonename+"."
-                #Write-Host "$hostname.$ZoneName"
-                #Write-Host -ForegroundColor DarkMagenta "Looking in Zone $RZone for $FQDNOPT2"                
+                $FQDNOPT2 = $i.HostName+"."+$zonename+"."               
                 if ($(get-DnsServerResourceRecord -ZoneName $RZone -RRType Ptr).recorddata.ptrdomainname  -like "$FQDNOPT2" )
                 {
-                    Write-Host -ForegroundColor Green "Found $Hostname in $rzone!"
+                    Write-Host -ForegroundColor Green "Found $FQDNOPT2 in $rzone!"
                     Start-Sleep -Seconds .25
                     $PrtRecord = Get-DnsServerResourceRecord -ZoneName $RZone | Where-Object {$_.recorddata.ptrdomainname -like "$FQDNOPT2"}
                     Remove-DnsServerResourceRecord -ZoneName $RZone -Name $PrtRecord.HostName -RRType Ptr -Force -Verbose 
+                    Write-Host ""
                     $hit++    
                 }    
             }
@@ -181,8 +178,8 @@ function Redo-DNSRecord{
     $OpenFileDialog.ShowDialog() | Out-Null
     $OpenFileDialog.filename
 #Import the CSV and run a loop to add the DNS entries and data back to the the DNS Zone
-    Import-Csv -Path $OpenFileDialog.FileName | ForEach-Object 
-    {
+    Import-Csv -Path $OpenFileDialog.FileName | ForEach-Object {
+        
         if ($ZoneName -notlike $_.ZoneName )
         {
             Write-Host -ForegroundColor Red "!!The Record you are trying to restore was not previously configured for this zone!!"
@@ -254,7 +251,6 @@ function Remove-DNSRecordFromCSV
     $CurrentItem = 0
     Import-Csv -Path $OpenFileDialog.FileName | ForEach-Object 
     {
-        #$ErrorActionPreference = 'SilentlyContinue'
         Write-Progress -Activity "Removing the Selected DNS A Records and PTR Records" -Status "$PercentComplete% Complete:" -PercentComplete $PercentComplete 
         if ($ZoneName -notlike $_.ZoneName )
         {
@@ -312,7 +308,7 @@ function  DNSRECORDSREPORT
 
 }
 
-
+#MENUS 
 
 function mainmenu
 {
