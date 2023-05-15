@@ -310,7 +310,7 @@ function Get-DNSRecordReportSTATIC{
 function Redo-DNSRecord{
      
 #location where DNS Record Removals are stored by default
-      $path = "$env:SystemDrive\DNS_CleanUp_Util\DNS Record Removal Jobs" 
+      $path = "$env:SystemDrive\DNS_CleanUp_Util\DNS Record Removal Jobs Dynamic" 
 #Selection of the Zone file
     $ZoneSelect = Get-DnsServerZone | Out-GridView -PassThru -Title "Select the DNS Zone to generate a report from"
     $ZoneName = $ZoneSelect.ZoneName
