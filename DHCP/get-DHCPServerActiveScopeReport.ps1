@@ -1,11 +1,5 @@
-#$Credential = Get-Credential
-#$Credential.Password | ConvertFrom-SecureString | Set-Content "C:\temp\Password.txt"
-
-# Import the encrypted password from the file
-#$EncryptedPassword = Get-Content "C:\temp\Password.txt" | ConvertTo-SecureString
-
-# Create a credential object using the username and encrypted password
-#$Credential = New-Object System.Management.Automation.PSCredential($Credential.UserName, $EncryptedPassword)
+#   THIS SCRIPT WILL CHECK THE STATUS OF DHCP SCOPES RUNNING AND CHECK PREVIOUS SCOPE STATE.
+#   IF A SCOPE THAT WAS PREVIOUSLY ACTIVE BECOMES INACTIVE, THE SCRIPT WILL NOTIFY ADMINS VIA EMAIL
 
 # Define the DHCP server to monitor
 $dhcpServer = "$env:COMPUTERNAME"
