@@ -520,6 +520,9 @@ function DNSRemovalMenu
         "Remove DYNAMIC DNS Records with Caution",
         "Remove DYNAMIC DNS Records WITHOUT Caution",
         "Remove DYNAMIC Records from a CSV",
+        "Remove STATIC DNS Records with Caution",
+        "Remove STATIC DNS Records WITHOUT Caution",
+        "Remove STATIC Records from a CSV",
         "Return to Main Menu"
         $(Get-MenuSeparator),
         "Quit"
