@@ -461,7 +461,7 @@ function Remove-DynamicDNSRecordFromCSV
     #Import the CSV and run a loop to add the DNS entries and data back to the the DNS Zone
     $List = Import-Csv -Path $OpenFileDialog.FileName
     $list | ForEach-Object {
-    {
+    
         Write-Progress -Activity "Removing the Selected DNS A Records and PTR Records" -Status "$PercentComplete% Complete:" -PercentComplete $PercentComplete 
         if ($ZoneName -notlike $_.ZoneName )
         {
@@ -509,7 +509,7 @@ function Remove-STATICDNSRecordFromCSV
     #Import the CSV and run a loop to add the DNS entries and data back to the the DNS Zone
     $List = Import-Csv -Path $OpenFileDialog.FileName
     $list | ForEach-Object {
-    {
+    
         Write-Progress -Activity "Removing the Selected DNS A Records and PTR Records" -Status "$PercentComplete% Complete:" -PercentComplete $PercentComplete 
         if ($ZoneName -notlike $_.ZoneName )
         {
