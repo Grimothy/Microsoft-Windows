@@ -459,10 +459,8 @@ function Remove-DynamicDNSRecordFromCSV
     $OpenFileDialog.ShowDialog() | Out-Null
     $OpenFileDialog.filename
     #Import the CSV and run a loop to add the DNS entries and data back to the the DNS Zone
-    $List = Import-Csv -Path $OpenFileDialog.FileName -header 'hostname'
-    $TotalItems=$List.Count
-    $CurrentItem = 0
-    Import-Csv -Path $OpenFileDialog.FileName | ForEach-Object 
+    $List = Import-Csv -Path $OpenFileDialog.FileName
+    $list | ForEach-Object {
     {
         Write-Progress -Activity "Removing the Selected DNS A Records and PTR Records" -Status "$PercentComplete% Complete:" -PercentComplete $PercentComplete 
         if ($ZoneName -notlike $_.ZoneName )
@@ -509,10 +507,8 @@ function Remove-STATICDNSRecordFromCSV
     $OpenFileDialog.ShowDialog() | Out-Null
     $OpenFileDialog.filename
     #Import the CSV and run a loop to add the DNS entries and data back to the the DNS Zone
-    $List = Import-Csv -Path $OpenFileDialog.FileName -header 'hostname'
-    $TotalItems=$List.Count
-    $CurrentItem = 0
-    Import-Csv -Path $OpenFileDialog.FileName | ForEach-Object 
+    $List = Import-Csv -Path $OpenFileDialog.FileName
+    $list | ForEach-Object {
     {
         Write-Progress -Activity "Removing the Selected DNS A Records and PTR Records" -Status "$PercentComplete% Complete:" -PercentComplete $PercentComplete 
         if ($ZoneName -notlike $_.ZoneName )
@@ -539,7 +535,6 @@ function Remove-STATICDNSRecordFromCSV
     pause
     Write-Host -ForegroundColor Green "Task Completed Returning to main menu"
     Start-Sleep -Seconds 2
-    Write-Progress -Completed -Activity "Removing the Selected DNS A Records and PTR Records"
     mainmenu  
 }
     
