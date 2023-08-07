@@ -1,7 +1,7 @@
 Import-Module NameIT
 $oct = 1
 
-Measure-Command { 1..250| ForEach-Object {
+Measure-Command { 21..200| ForEach-Object {
 
     $name = Invoke-Generate "APS-???-####"
     $ip = "10.10.15.$oct"
