@@ -527,7 +527,7 @@ function Remove-STATICDNSRecordFromCSV
             Write-Host -ForegroundColor Yellow "Deleting DNS record "$_.hostname" with IP Adress "$i.RecordData.IPv4Address.IPAddressToString
             Write-Host -ForegroundColor Cyan "=============================================="
             #write-host -ForegroundColor Green "Performing a remove for DNS A Record: " $_.hostname
-            remove-DnsServerResourceRecord -RRType 'A' -ZoneName $ZoneName -Name $_.hostname -RecordData $_.recorddata -Force -WhatIf
+            remove-DnsServerResourceRecord -RRType 'A' -ZoneName $ZoneName -Name $_.hostname -RecordData $_.recorddata -Force 
             write-host -ForegroundColor Magenta "Performing recursion to Reverse lookup zones.... please be patient"
             
             foreach ($RZone in $ReverseZonename)
@@ -540,7 +540,7 @@ function Remove-STATICDNSRecordFromCSV
                     Write-Host -ForegroundColor Green "Found $FQDNOPT2 in $rzone!"
                     Start-Sleep -Seconds .25
                     $PrtRecord = Get-DnsServerResourceRecord -ZoneName $RZone | Where-Object {$_.recorddata.ptrdomainname -like "$FQDNOPT2"}
-                    Remove-DnsServerResourceRecord -ZoneName $RZone -Name $PrtRecord.HostName -RRType Ptr -Force -Verbose -WhatIf
+                    Remove-DnsServerResourceRecord -ZoneName $RZone -Name $PrtRecord.HostName -RRType Ptr -Force -Verbose
                     Write-Host ""
                     $hit++
                 
