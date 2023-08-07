@@ -359,7 +359,8 @@ function Redo-StaticDNSRecord{
         $OpenFileDialog.ShowDialog() | Out-Null
         $OpenFileDialog.filename
     #Import the CSV and run a loop to add the DNS entries and data back to the the DNS Zone
-        Import-Csv -Path $OpenFileDialog.FileName | ForEach-Object {
+    $List = Import-Csv -Path $OpenFileDialog.FileName
+    $list | ForEach-Object {    
             
             if ($ZoneName -notlike $_.ZoneName )
             {
@@ -524,7 +525,7 @@ function Remove-STATICDNSRecordFromCSV
             Write-Host -ForegroundColor Cyan "Records for the remove can be located in the following directory: " $OpenFileDialog.filename
         }else{
             Write-Host -ForegroundColor Cyan $_.hostname will be deleted
-            Write-Host -ForegroundColor Yellow "Deleting DNS record "$_.hostname" with IP Adress "$i.RecordData.IPv4Address.IPAddressToString
+            Write-Host -ForegroundColor Yellow "Deleting DNS record "$_.hostname" with IP Adress "$_.RecordData.IPv4Address.IPAddressToString
             Write-Host -ForegroundColor Cyan "=============================================="
             #write-host -ForegroundColor Green "Performing a remove for DNS A Record: " $_.hostname
             remove-DnsServerResourceRecord -RRType 'A' -ZoneName $ZoneName -Name $_.hostname -RecordData $_.recorddata -Force 
@@ -552,7 +553,8 @@ function Remove-STATICDNSRecordFromCSV
                 #>
             }
             $CurrentItem++
-            $PercentComplete = [int](($CurrentItem / $TotalItems) * 100)    
+            $PercentComplete = [int](($CurrentItem / $TotalItems) * 100)
+            Clear-Host    
             }       
     
     }
